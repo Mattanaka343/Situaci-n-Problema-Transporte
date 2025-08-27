@@ -1,0 +1,37 @@
+---
+title: "Factores sociodemográficos y sus efectos en el transporte"
+author: "Mateo Yáñez Tanaka"
+format:
+   html:
+     toc: true
+     html-math-method: katex
+     embed-resources: true
+     self-contained-math: true
+     df-print: kable
+editor: source
+---
+# Factores Sociodemográficos y sus efectos en el transporte
+
+Autores: Fernando Pavía-González, Fernando Ramos-Valdez, Jorge Sanchez-Ponce, Mateo Yáñez-Tanaka 
+
+## Abstract
+
+Placeholder text
+
+## Metodología
+```{r}
+#| eval: false
+install.packages('bnlearn')
+install.packages('BiocManager')
+BiocManager::install('Rgraphviz')
+```
+
+```{r}
+library(bnlearn)
+library(Rgraphviz)
+```
+
+Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 3 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
+
+Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transpoorte de 
+- ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?

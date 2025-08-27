@@ -1,0 +1,8 @@
+Python:
+    pandas
+    numpy
+
+R:
+    bnlearn
+    BiocManager
+    Rgraphhviz

@@ -1,6 +1,6 @@
 ---
 title: "Factores sociodemográficos y sus efectos en el transporte"
-author: "Mateo Yáñez Tanaka"
+author: "Mateo Yáñez Tanaka, Fernando Pavía González"
 format:
    html:
      toc: true
@@ -27,11 +27,77 @@ BiocManager::install('Rgraphviz')
 ```
 
 ```{r}
+library(tidyverse)
 library(bnlearn)
 library(Rgraphviz)
 ```
 
 Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 3 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
 
-Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transpoorte de 
-- ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?
+Primeramente, importaremos los datos proporcionados ya limpios y procesados para su uso.
+
+```{r}
+data=read.csv("../DATA/datos.csv",stringsAsFactors = TRUE)
+head(data)
+```
+
+Como primera DAG teórica propusimos el modelo preliminar en el cual definimos lo siguiente: La edad y el sexo son los nodos raíz e independientes entre ellos. El estrato socioeconómico esta dado por la edad y el sexo; este mismo se relaciona con la cantidad de vehiculos privados que la persona posee y define la población dentro de su localidad. La cantidad de vehiculos da a entender el vehículo que se utiliza en un viaje. Finalmente, el día del viaje esta dado por el vehículo que se usa en dicho viaje y la población de su localidad.
+
+```{r}
+data = data |>
+        select(-id_viv)
+```
+
+```{r}
+colnames(data)=c("L","C","A","M","B","D","E","V","S")
+```
+
+```{r}
+dag = empty.graph(nodes = c("L","C","A","M","B","D","E","V","S"))
+```
+
+```{r}
+arc_set = matrix(c("E","C",
+                   "S","C",
+                   "C","A",
+                   "C","M",
+                   "C","B",
+                   "C","L",
+                   "A","D",
+                   "M","D",
+                   "B","D",
+                   "D","V",
+                   "L","V"), byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from", "to")))
+```
+
+```{r}
+arcs(dag) = arc_set
+```
+
+```{r}
+dag
+```
+
+```{r}
+graphviz.plot(dag, shape = "ellipse")
+```
+
+Para la segunda DAG consideramos la primera; en este caso queremos saber la fuerza de cada 
+
+
+- ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?
+#data = data |>
+#        select(-tloc,-id_viv,-p5_3,-edad,-p5_14,-sexo)
+#head(data)
+
+
+
+#colnames(data)= c("E", "A", "M", "B")
+#head(data)
+
+
+
+
+
+

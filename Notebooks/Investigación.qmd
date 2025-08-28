@@ -23,15 +23,27 @@ Placeholder text
 #| eval: false
 install.packages('bnlearn')
 install.packages('BiocManager')
+install.packages('')
 BiocManager::install('Rgraphviz')
 ```
 
 ```{r}
 library(bnlearn)
-library(Rgraphviz)
+library(tidyverse)
 ```
 
-Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 3 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
+Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
+
+```{r}
+data = read.csv('../Data/datos.csv')
+data = data |> select(-id_viv)
+dag = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
+```
+```{r}
+data
+```
+
+## Queries
 
 Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transpoorte de 
 - ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?

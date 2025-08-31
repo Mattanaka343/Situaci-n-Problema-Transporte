@@ -35,6 +35,7 @@ set.seed(42)
 
 Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles tres estarán basados en la teoría y nuestras hipótesis y uno será el resultado de la aplicación de hill climbing. La primera DAG es una ideación nuestra basada en nuestras hipótesis y comprensión de los temas.
 
+### Creando las DAGs
 ```{r}
 data = read.csv('../Data/datos.csv',)
 data = data |> select(-id_viv)
@@ -112,7 +113,7 @@ graphviz.plot(dag3, shape = 'ellipse')
 ```
 ### Encontrando la DAG Óptima
 
-La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como "*Hill Climbing*". Le aplicaremos este algoritmo a nuestros datos para obtener la versión óptima de la DAG.
+La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como *Hill Climbing*. Le aplicaremos este algoritmo a nuestros datos para obtener la versión óptima de la DAG.
 ```{r}
 optimal_dag = hc(data)
 graphviz.plot(optimal_dag,shape = 'ellipse')
@@ -120,8 +121,38 @@ graphviz.plot(optimal_dag,shape = 'ellipse')
 Los resultados otrogados por esta dag indican que la variable más importante es la población de la localidad en donde vive la persona, esta se relaciona con su clase social y la cantidad de autos que tiene que a su vez se relaciona con la clase social. La cantidad de autos junto con la clase social informan el vehículo en el que viaja la persona. El vehículo en el que viaja informa la cantidad de motocicletas que poseé un individuo, junto con la clase social informa la edad, y junto con la edad informa el sexo y el día en el que comunmente viaja la persona.
 
 ### Comparando las DAGS
+Ahora antes de decidir que estructura utilizaremos para contestar nuestras preguntas compararemos las dags obteniendo sus puntajes en las pruebas de BIC (Bayesian Information Criterion) y AIC (Akaike Information Criterion).
+
+```{r}
+bic_dag_1 = score(dag,data = data, type = 'bic')
+bic_dag_2 = score(dag2,data = data, type = 'bic')
+bic_dag_3 = score(dag3,data = data, type = 'bic')
+bic_opt_dag = score(optimal_dag, data = data, type = 'bic')
+
+print(data.frame(DAG1 = bic_dag_1, DAG2 = bic_dag_2, DAG3 = bic_dag_3, OPTIMAL_DAG = bic_opt_dag))
+```
+Los resulatados usando la prueba de BIC muestran que en efecto la mejor DAG es la que se obtuvo usando *Hill Climbing*, con la versión optimizada de la primera DAG y la DAG basada en investigaciones previas tomando valores relativamente cercanos. Ahora probamos utilizando AIC
+
+```{r}
+aic_dag_1 = score(dag,data = data, type = 'aic')
+aic_dag_2 = score(dag2,data = data, type = 'aic')
+aic_dag_3 = score(dag3,data = data, type = 'aic')
+aic_opt_dag = score(optimal_dag, data = data, type = 'aic')
+
+print(data.frame(DAG1 = aic_dag_1, DAG2 = aic_dag_2, DAG3 = aic_dag_3, OPTIMAL_DAG = aic_opt_dag))
+```
+Los resultados de esta pruba concluyen de la misma forma que la mejor DAG es la obtenida a través de *Hill Climbing*, sin embargo muestran la peor DAG como aquella basada en investigciones previas.
+
+A pesar de su desempeñoo en la segunda prueba, utilizaremos la tercera DAG para contestar las queries debido a su decente desempeño en la primera prueba, interpretabilidad y fundamentación teórica.
 
 ### Queries
 
 Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transpoorte de 
-- ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?
+- ¿Cuál es la probabilidad de que una mujer joven (adultez joven y adolscencia) de estrato social alto use la bicicleta?
+
+```{r}
+bn_mle = bn.fit(dag, data =data, method = 'mle')
+cpquery(bn_mle,(V=='7'),((S=='2')&((E=='2')|(E=='1'))&(C=='4')))
+```
+
+  - La probabilidad de encontrar un evento de este tipo es bastante baja, siendo de alrededor de 1.3% 

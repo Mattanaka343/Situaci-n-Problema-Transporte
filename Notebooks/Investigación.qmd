@@ -1,6 +1,6 @@
 ---
 title: "Factores sociodemográficos y sus efectos en el transporte"
-author: "Mateo Yáñez Tanaka, Fernando Pavía González"
+author: "Mateo Yáñez Tanaka"
 format:
    html:
      toc: true
@@ -28,147 +28,142 @@ BiocManager::install('Rgraphviz')
 ```
 
 ```{r}
-library(tidyverse)
 library(bnlearn)
 library(tidyverse)
+set.seed(42)
 ```
 
-Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
+Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles tres estarán basados en la teoría y nuestras hipótesis y uno será el resultado de la aplicación de hill climbing. La primera DAG es una ideación nuestra basada en nuestras hipótesis y comprensión de los temas.
+
+### Creando las DAGs
+
+Como primera DAG está basada en nuestras hipótesis. Propusimos el modelo preliminar en el cual definimos lo siguiente: La edad y el sexo son los nodos raíz e independientes entre ellos. El estrato socioeconómico esta dado por la edad y el sexo; este mismo se relaciona con la cantidad de vehiculos privados que la persona posee y define la población dentro de su localidad. La cantidad de vehiculos y la localidad informa el vehículo que se utiliza en un viaje. Finalmente, el día del viaje esta dado por el vehículo que se usa en dicho viaje
 
 ```{r}
-data = read.csv('../Data/datos.csv')
-head(data)
-```
-
-```{r}
+data = read.csv('../Data/datos.csv',)
 data = data |> select(-id_viv)
-head(data)
-```
 
-Como primera DAG teórica propusimos el modelo preliminar en el cual definimos lo siguiente: La edad y el sexo son los nodos raíz e independientes entre ellos. El estrato socioeconómico esta dado por la edad y el sexo; este mismo se relaciona con la cantidad de vehiculos privados que la persona posee y define la población dentro de su localidad. La cantidad de vehiculos da a entender el vehículo que se utiliza en un viaje. Finalmente, el día del viaje esta dado por el vehículo que se usa en dicho viaje y la población de su localidad.
+int_cols = sapply(data,is.integer)
+data[int_cols] = lapply(data[int_cols],as.factor)
 
-```{r}
 dag = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
-```
 
-```{r}
 arc_set = matrix(c("E","C",
                    "S","C",
                    "C","A",
                    "C","M",
                    "C","B",
                    "C","L",
-                   "A","D",
-                   "M","D",
-                   "B","D",
-                   "D","V",
+                   "A","V",
+                   "M","V",
+                   "B","V",
+                   "V","D",
                    "L","V"), byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from", "to")))
-```
 
-```{r}
 arcs(dag) = arc_set
+graphviz.plot(dag,shape = 'ellipse')
 ```
 
-```{r}
-dag
-```
-
-```{r}
-graphviz.plot(dag, shape = "ellipse")
-```
-
-Para la segunda DAG consideramos la primera; en este caso queremos saber la fuerza de cada arco del DAG, asi consideramos las independencias condicionales de los nodos y saber si debemos modificar el DAG original, creando un segundo DAG por encima de este con dichas modificaciones.
-
-```{r}
-# Ver la estructura actual
-str(data)
-
-# Detectar columnas de tipo integer
-int_cols <- sapply(data, is.integer)
-
-# Convertir esas columnas a factor
-data[int_cols] <- lapply(data[int_cols], as.factor)
-```
-
-```{r}
-# Verificar
-str(data)
-```
-
-
+La segunda DAG será una versión optimizada de esta, para ello tomaremos la DAG original que formulamos y harémos pruebas sobre la independencia condicional de los arcos que formulamos.
 ```{r}
 arc.strength(dag, data = data, criterion = "mi")
 ```
 
-Dado los resultaods anteriores, podemos inferir que hay tres arcos que no deberían de existir en el DAG original, estos son: de A a D, de M a D y de B a D; es decir que el nodo D que corresponde a el vehículo con el que viajas es independiente de los demás nodos, no tiene sentido, más no obstante, estos son los resultados.
+Observando los resultados de estas pruebas se puede inferir que se deberían de eliminar los siguientes 2 arcos:
+- M a V
+- B a V
 
+Ahora generaremos una DAG sin estos nodos
 ```{r}
 dag2 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
-```
 
-```{r}
 arc_set2 = matrix(c("E","C",
                    "S","C",
                    "C","A",
                    "C","M",
                    "C","B",
                    "C","L",
-                   "D","V",
+                   "A","V",
+                   "V","D",
                    "L","V"), byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from", "to")))
-```
 
-```{r}
 arcs(dag2) = arc_set2
-```
 
-```{r}
-dag2
-```
-
-```{r}
 graphviz.plot(dag2, shape = "ellipse")
 ```
-
-## Queries
-
-
-- Query #2: ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?
-Para facilitar la solución a este query, vamos a tomar solo las variables que necesitamos, en este caso necesitamos a: C (estrato socioeconómico), A (#Autos), M (#Motocicletas), B (#Bicicletas). También usaremos dos DAGs, la primera teórica y la mejor DAG utilizando hill climbing.
+La siguiente DAG está dada por investigaciones previas. 
 
 ```{r}
-dataQ2 = data |>
-        select(-L,-D,-E,-V,-S)
-head(dataQ2)
+dag3 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
+
+arc_set3 = matrix(c("E","B",
+                   "C","A",
+                   "C","M",
+                   "C","B",
+                   "L","A",
+                   "B","V",
+                   "A","V",
+                   "M","V",
+                   "S","V",
+                   "V","D"), byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from", "to")))
+
+arcs(dag3) = arc_set3
+
+graphviz.plot(dag3, shape = 'ellipse')
 ```
+### Encontrando la DAG Óptima
+
+La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como *Hill Climbing*. Le aplicaremos este algoritmo a nuestros datos para obtener la versión óptima de la DAG.
+```{r}
+optimal_dag = hc(data)
+graphviz.plot(optimal_dag,shape = 'ellipse')
+```
+Los resultados otrogados por esta dag indican que la variable más importante es la población de la localidad en donde vive la persona, esta se relaciona con su clase social y la cantidad de autos que tiene que a su vez se relaciona con la clase social. La cantidad de autos junto con la clase social informan el vehículo en el que viaja la persona. El vehículo en el que viaja informa la cantidad de motocicletas que poseé un individuo, junto con la clase social informa la edad, y junto con la edad informa el sexo y el día en el que comunmente viaja la persona.
+
+### Comparando las DAGS
+Ahora antes de decidir que estructura utilizaremos para contestar nuestras preguntas compararemos las dags obteniendo sus puntajes en las pruebas de BIC (Bayesian Information Criterion) y AIC (Akaike Information Criterion).
 
 ```{r}
-bn=bn.fit(dag,data=data)
+bic_dag_1 = score(dag,data = data, type = 'bic')
+bic_dag_2 = score(dag2,data = data, type = 'bic')
+bic_dag_3 = score(dag3,data = data, type = 'bic')
+bic_opt_dag = score(optimal_dag, data = data, type = 'bic')
+
+print(data.frame(DAG1 = bic_dag_1, DAG2 = bic_dag_2, DAG3 = bic_dag_3, OPTIMAL_DAG = bic_opt_dag))
 ```
+Los resulatados usando la prueba de BIC muestran que en efecto la mejor DAG es la que se obtuvo usando *Hill Climbing*, con la versión optimizada de la primera DAG y la DAG basada en investigaciones previas tomando valores relativamente cercanos. Ahora probamos utilizando AIC
 
 ```{r}
-cpquery(bn, event = (A==1 | M==1 | B==1), evidence = (E==1 | E==2), n = 10^6)
+aic_dag_1 = score(dag,data = data, type = 'aic')
+aic_dag_2 = score(dag2,data = data, type = 'aic')
+aic_dag_3 = score(dag3,data = data, type = 'aic')
+aic_opt_dag = score(optimal_dag, data = data, type = 'aic')
+
+print(data.frame(DAG1 = aic_dag_1, DAG2 = aic_dag_2, DAG3 = aic_dag_3, OPTIMAL_DAG = aic_opt_dag))
 ```
+Los resultados de esta pruba concluyen de la misma forma que la mejor DAG es la obtenida a través de *Hill Climbing*, sin embargo muestran la peor DAG como aquella basada en investigciones previas.
 
-Ahora encontraremos la "mejor" DAG utilizando el metodo de hill climbing; esto para realizar el mismo query y comparar los resultados.
+A pesar de su desempeñoo en la segunda prueba, utilizaremos la tercera DAG para contestar las queries debido a su decente desempeño en la primera prueba, interpretabilidad y fundamentación teórica.
 
+### Queries
+
+Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transporte de la población formulamos las siguientes preguntas
+- ¿Cuál es la probabilidad de que una mujer joven (adultez joven y adolscencia) de estrato social alto use la bicicleta?
 ```{r}
-best_dag = hc(data)
+bn_mle = bn.fit(dag, data =data, method = 'mle')
+cpquery(bn_mle,(V=='7'),((S=='2')&((E=='2')|(E=='1'))&(C=='4')))
 ```
 
+  - La probabilidad de encontrar un evento de este tipo es bastante baja, siendo de alrededor de 1.3% 
+
+- ¿Cuál es la probabilidad de que una persona que vive en una localidad de menos de 2,500 habitantes sea de estrato alto?
+
+- ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?
 ```{r}
-graphviz.plot(best_dag, shape = "ellipse")
+cpquery(bn_mle, event = (A==1 | M==1 | B==1), evidence = (E==1 | E==2), n = 10^6)
 ```
 
-```{r}
-bn1=bn.fit(best_dag,data=data)
-```
-
-```{r}
-cpquery(bn1, event = (A==1 | M==1 | B==1), evidence = (E==1 | E==2), n = 10^6)
-```
-
-Obtenemos probabilidades muy similares, con diferencia de 0.01; dicho esto podemos inferir que, aunque, nuestra primera DAG y la DAG dada con hill climbing, sean bastante diferentes, muestran una probabilidad similar de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta.
-
-
+  - 

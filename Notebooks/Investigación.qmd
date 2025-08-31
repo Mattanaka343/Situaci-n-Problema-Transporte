@@ -30,20 +30,98 @@ BiocManager::install('Rgraphviz')
 ```{r}
 library(bnlearn)
 library(tidyverse)
+set.seed(42)
 ```
 
-Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles dos estarán basados en la teoría y uno será el resultado de la aplicación de hill climbing:
+Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de los cuáles tres estarán basados en la teoría y nuestras hipótesis y uno será el resultado de la aplicación de hill climbing. La primera DAG es una ideación nuestra basada en nuestras hipótesis y comprensión de los temas.
 
 ```{r}
-data = read.csv('../Data/datos.csv')
+data = read.csv('../Data/datos.csv',)
 data = data |> select(-id_viv)
+
+int_cols = sapply(data,is.integer)
+data[int_cols] = lapply(data[int_cols],as.factor)
+
 dag = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
-```
-```{r}
-data
+
+arc_set = matrix(c("E","C",
+                   "S","C",
+                   "C","A",
+                   "C","M",
+                   "C","B",
+                   "C","L",
+                   "A","V",
+                   "M","V",
+                   "B","V",
+                   "V","D",
+                   "L","V"), byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from", "to")))
+
+arcs(dag) = arc_set
+graphviz.plot(dag,shape = 'ellipse')
 ```
 
-## Queries
+La segunda DAG será una versión optimizada de esta, para ello tomaremos la DAG original que formulamos y harémos pruebas sobre la independencia condicional de los arcos que formulamos.
+```{r}
+arc.strength(dag, data = data, criterion = "mi")
+```
+
+Observando los resultados de estas pruebas se puede inferir que se deberían de eliminar los siguientes 2 arcos:
+- M a V
+- B a V
+
+Ahora generaremos una DAG sin estos nodos
+```{r}
+dag2 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
+
+arc_set2 = matrix(c("E","C",
+                   "S","C",
+                   "C","A",
+                   "C","M",
+                   "C","B",
+                   "C","L",
+                   "A","V",
+                   "V","D",
+                   "L","V"), byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from", "to")))
+
+arcs(dag2) = arc_set2
+
+graphviz.plot(dag2, shape = "ellipse")
+```
+La siguiente DAG está dada por investigaciones previas. 
+
+```{r}
+dag3 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
+
+arc_set3 = matrix(c("E","B",
+                   "C","A",
+                   "C","M",
+                   "C","B",
+                   "L","A",
+                   "B","V",
+                   "A","V",
+                   "M","V",
+                   "S","V",
+                   "V","D"), byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from", "to")))
+
+arcs(dag3) = arc_set3
+
+graphviz.plot(dag3, shape = 'ellipse')
+```
+### Encontrando la DAG Óptima
+
+La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como "*Hill Climbing*". Le aplicaremos este algoritmo a nuestros datos para obtener la versión óptima de la DAG.
+```{r}
+optimal_dag = hc(data)
+graphviz.plot(optimal_dag,shape = 'ellipse')
+```
+Los resultados otrogados por esta dag indican que la variable más importante es la población de la localidad en donde vive la persona, esta se relaciona con su clase social y la cantidad de autos que tiene que a su vez se relaciona con la clase social. La cantidad de autos junto con la clase social informan el vehículo en el que viaja la persona. El vehículo en el que viaja informa la cantidad de motocicletas que poseé un individuo, junto con la clase social informa la edad, y junto con la edad informa el sexo y el día en el que comunmente viaja la persona.
+
+### Comparando las DAGS
+
+### Queries
 
 Para entender propiamente como es que los factores socioeconomicos afectan los patrones de transpoorte de 
 - ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?

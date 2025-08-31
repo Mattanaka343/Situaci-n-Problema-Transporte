@@ -9,6 +9,7 @@ format:
      self-contained-math: true
      df-print: kable
 editor: source
+bibliography: references.bib
 ---
 # Factores Sociodemográficos y sus efectos en el transporte
 
@@ -107,7 +108,8 @@ arc_set3 = matrix(c("E","B",
                    "A","V",
                    "M","V",
                    "S","V",
-                   "V","D"), byrow = TRUE, ncol = 2,
+                   "V","D"
+                   ), byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from", "to")))
 
 arcs(dag3) = arc_set3
@@ -160,6 +162,11 @@ cpquery(bn_mle,(V=='7'),((S=='2')&((E=='2')|(E=='1'))&(C=='4')))
   - La probabilidad de encontrar un evento de este tipo es bastante baja, siendo de alrededor de 1.3%. Mostrando que el uso de la bicicleta parece ser poco común en las mujeres de clase alta
 
 - ¿Cuál es la probabilidad de que una persona que vive en una localidad de menos de 2,500 habitantes sea de estrato alto?
+
+```{r}
+cpquery(bn_mle, event = (E==4), evidence = (L==4), n = 10^6)
+```
+  - la probabilidad de que en una comunidad pequeña sea de estrato alto es relativamente alta en aproximadamente 1 de cada 3 personas cumplen con estas caracteristicas 
 
 2. ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo (bajo y medio bajo) tenga ya sea una moto, un auto o una bicicleta?
 ```{r}

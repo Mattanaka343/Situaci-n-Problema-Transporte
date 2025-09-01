@@ -29,52 +29,44 @@ como es evidente para este punto el panorama de la movilidad especialmente en la
 
 Para comprender estos patrones de desplazamiento se determinó que se contestarán un total de 4 preguntas propuestas por otros grupos de investigadores en nuestro grupo de estudio.
 
-¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?	
+- ¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?	
 
 
-¿Cuál es la probabilidad de que una persona que vive en una localidad de menos de 2,500 habitantes sea de estrato alto?
+- ¿Cuál es la probabilidad de que una persona que vive en una localidad de menos de 2,500 habitantes sea de estrato alto?
 
-¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?	
+- ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?	
 
 
-Se busca averiguar si las mujeres de edad media y alta, de estrato social bajo tienden a caminar más entre semana en comparación a los hombres con las mismas características.
+- Se busca averiguar si las mujeres de edad media y alta, de estrato social bajo tienden a caminar más entre semana en comparación a los hombres con las mismas características.
 
 Se espera que al determinar la probabilidad de que estos sucesos ocurran obtengamos una mejor percepción de las inclinaciones de la población con respecto a sus métodos de transporte.
 
 ## Metodología
 
-Esta investigación se centró en encontrar las probabilidades de ciertos eventos que podrían ayudar a comprender mejor los patrones de movimiento de la población basado en sus características sociodemográficas. Para ello se utilizaron las redes bayesianas (BNs por sus siglas en inglés). Estas estructuras son gráfos dirigidos acíclicos (DAGs por sus siglas en inglés) en los cuales todos los nodos representan variables aleatorias (ya sea discretas o continuas) y los arcos, junto con su dirección, representan dependencias condicionales. Las BNs permiten trabajar con distribuciones condicionales locales $$A~Mult= e)~Mult(n,\theta_{A})$$en vez de la distribución conjunta (global) $$X~Mult(n,p)$$  la cual es más compleja. Las BNs también nos dan el beneficio de poder realizar queries, una forma de inferencia para encontrar probabilidades del estilo $$\mathbb{P}(Evento|Evidencia)$$, a través de aproximaciones (con algoritmos como logic sampling o muestreo de Monte Carlo) o  de manera exacta (con algoritmos como variable elimination y junction tree) 
+Esta investigación se centró en encontrar las probabilidades de ciertos eventos que podrían ayudar a comprender mejor los patrones de movimiento de la población basado en sus características sociodemográficas. Para ello se utilizaron las redes bayesianas (BNs por sus siglas en inglés). Estas estructuras son gráfos dirigidos acíclicos (DAGs por sus siglas en inglés) en los cuales todos los nodos representan variables aleatorias (ya sea discretas o continuas) y los arcos, junto con su dirección, representan dependencias condicionales. Las BNs permiten trabajar con distribuciones condicionales locales $$A \sim \text{Mult}(n,\theta_{A})$$en vez de la distribución conjunta (global) $$X \sim \text{Mult}(n,p)$$  la cual es más compleja. Las BNs también nos dan el beneficio de poder realizar *queries*, una forma de inferencia para encontrar probabilidades del estilo $$\mathbb{P}(Evento|Evidencia)$$, a través de aproximaciones (con algoritmos como logic sampling o muestreo de Monte Carlo) o  de manera exacta (con algoritmos como variable elimination y junction tree).
+
+Las DAGs son modelos evaluables a través de varios métodos. Para esta investigación se utilizaron el *Bayesian Information Criterion* (BIC) que está dado por $$BIC = \ln[\mathbb{\hat{P}}(Nodos)] -\frac{d}{2}\ln(n)$$ y el *Akaike Information Criterion* (AIC) dado por $$AIC = \ln[\mathbb{\hat{P}}(Nodos)] -d$$ donde $\mathbb{\hat{P}$ es la probabilidad global estimada, $d$ es el numero total de parámetros y $n$ es el numero de oservaciones
 
 Para la creación de los modelos computacionales se usaron los lenguajes R y Python. Python se usó para la limpieza y unificación de los datos, mientras que R se usó para la inferencia estadística. Los módulos necesarios para replicar esta investigación son:
 Para python: 
-```pandas``` para el procesamiento de los datos
-```numpy``` para el manejo de arrays
-Para R:
-```bnlearn``` para el entrenamiento de las redes bayesianas
-```rgraphviz``` para graficar las dags
-Adicionalmente los datos usados para esta investigación provienen de Instituto Nacional de Estadística y Geografía, y su Encuesta Origen Destino en Hogares de la Zona Metropolitana del Valle de México (EOD) 2017 [link]
 
+- ```pandas``` para el procesamiento de los datos
+- ```numpy``` para el manejo de arrays
+
+Para R:
+
+- ```bnlearn``` para el entrenamiento de las redes bayesianas
+- ```rgraphviz``` para graficar las dags
+
+Adicionalmente los datos usados para esta investigación provienen de Instituto Nacional de Estadística y Geografía, y su [Encuesta Origen Destino en Hogares de la Zona Metropolitana del Valle de México (EOD) 2017](https://www.inegi.org.mx/programas/eod/2017/#documentacion)
 
 ## Aplicación
 
-### Modelación de DAG basada en estudios
+### Limpieza de Datos
+Este Proyecto comenzó importando la base de datos, que se encontraba separada en cinco archivos distintos. Tras leer sus catálogos determinamos que para efectos de esta investigación no todas las variables contenidas dentro de estos nos eran útiles, las que conservamos fueron aquellas que representan la cantidad de vehículos que poseé una persona, su estrato socioeconómico, edad y sexo, y finalmente la población de la localidada donde vive, el día en el que viajó, y el vehículo que usó. Después de hacer esto se cambió el esquema de los nombres para que fuesen únicamente letras que representan las variables y la forma en la que estaba categorizada la edad para que fuesen categorías más amplias que los años cumplidos. (Para más información ver el archivo auxiliar [Generación de Datos](https://github.com/Mattanaka343/Situaci-n-Problema-Transporte/blob/main/Notebooks/DataGeneration.ipynb)
 
-Para construir la DAG se consultaron varios recursos y artículos que describieran la relación entre las variables seleccionadas para el modelado, estos estudios si bien varían entre varios países en distintos niveles de desarrollo, otorgan una perspectiva generalizada que servirá como base para describir las conductas que podemos observar en el mundo y aplicarlas a nuestra colección de datos.
-
-
-En primer lugar partiremos de los “Nodos Padre” principales como las variables que no dependen de otras, entre ellas se encuentran el sexo (S), la edad (E), el tamaño de la población de la localidad (L) y por ultimo el estrato social (C), las variables primeras tres variables por simple lógica no se ven influenciadas por ninguna otra variable ya que son estados definidos e independientes tanto de la personas como de las localidades, aunque se podría argumentar que en el estrato social influyen aspectos como el nivel de educación, los ingresos e incluso variables que poseemos como el sexo y la edad se consideró, que dada la limitación con las variables elegidas, la relación no sería tan significativa y solo volvería la DAG más ineficiente para la modelación.
-
-
-Partiendo de esta base se definieron las primeras relaciones con las variables que describen la cantidad de motos (M), bicicletas (B) y automóviles (C), las relaciones de dependencia directas que se ven definidas a partir de los nodos padre ya definidos y basados en nuestra investigación indica que existe una relación entre el estrato social y todas las anteriormente mencionadas, un mayor nivel de estudio y mayor poder adquisitivo en el jefe de la familia aumenta la cantidad de vehículos en el hogar, @RITH2019102484, por otra parte la edad parece estar relacionada a la cantidad de bicicletas en el hogar, esto debido a que principalmente niños y adultos jóvenes son los que poseen mayor tendencia a utilizar este medio de transporte mientras que el resto de adultos suelen preferir otro tipo de transporte, @systems11060314, finalmente el tamaño de la población tiene un efecto en la cantidad de autos en el hogar debido a las diferencias en la forma urbana que ciudades o localidades presentan de acuerdo a su población, la facilidad de tránsito en las calles tanto como el acceso a transporte público es otra diferencia muy notoria de localidad a localidad, @article2.
-
- 
-Para la próxima variable dentro de la DAG que indica el medio de transporte utilizado en un determinado viaje, podemos relacionar la cantidad de vehículos de cada categoría dentro de un hogar (M,B y C), debido a que, contar con estos medios de transporte privados tiene una influencia directa en la toma de decisiones a la hora de seleccionar el modo de desplazamiento, @article3, @article4 finalmente la variable del sexo (S) también posee una relación con el modo de transporte, esto está mas arraigado en las diferencias sociales entre hombres y mujeres, dado que en muchas ocasiones las mujeres evitan ciertos medios por las implicaciones en su seguridad y bienestar, además de señalar que las mujeres suelen trasladarse con niños y esto también afecta el medio utilizado @doi:10.1155/2013/706918
-
-
-La última variable D que especifica el periodo de la semana en que se realizó el viaje (entre semana o sábado), solo está relacionada con el medio de transporte utilizado para el viaje, ya que las actividades realizadas en distintos días de la semana requieren de un vehículo o medio de transporte adecuado para estas actividades, como lo explica el estudio de ---- la distribución y cantidad de localizaciones a visitar dentro de un “tour” se diferencia mucho entre fines de semana y días entre semana presentando mucha variabilidad intrapersonal, concretamente en fines de semana, cambiando las distancias a recorrer y por lo tanto el medio de transporte utilizado, @article.
-
-
-
+### Formulando DAGs
+Después de esto se importaron los datos en R y se formuló una DAG preliminar basada en intuiciones sobre el transporte. Teorizamos que la edad (E)  y el sexo (S) son los nodos raíz e independientes entre ellos. El estrato socioeconómico (C)  está dado por la edad y el sexo; este mismo se relaciona con la cantidad de vehículos privados que la persona poseé (A)(B)(M) y define la población dentro de su localidad (L). La cantidad de vehículos y la localidad (L) informan el vehículo que se utiliza en un viaje (V) y finalmente, el día del viaje (D) está dado por el vehículo que se usa en dicho él.
 ```{r}
 #| eval: false
 install.packages('bnlearn')
@@ -87,15 +79,7 @@ BiocManager::install('Rgraphviz')
 library(bnlearn)
 library(tidyverse)
 set.seed(42)
-```
 
-Para entender propiamente los efectos que tienen los factores demográficos en los patrones de transporte de la población propondremos utilizar 4 DAGs (Directed Acyclical Graphs), de las cuales tres estarán basados en la teoría y nuestras hipótesis, y uno será el resultado de la aplicación de hill climbing. La primera DAG es una ideación nuestra basada en nuestras hipótesis y comprensión de los temas.
-
-### Creando las DAGs
-
-Como primera DAG está basada en nuestras hipótesis. Propusimos el modelo preliminar en el cual definimos lo siguiente: La edad y el sexo son los nodos raíz e independientes entre ellos. El estrato socioeconómico esta dado por la edad y el sexo; este mismo se relaciona con la cantidad de vehículos privados que la persona posee y define la población dentro de su localidad. La cantidad de vehículos y la localidad informa el vehículo que se utiliza en un viaje. Finalmente, el día del viaje esta dado por el vehículo que se usa en dicho viaje.
-
-```{r}
 data = read.csv('../Data/datos.csv',)
 data = data |> select(-id_viv)
 
@@ -121,16 +105,13 @@ arcs(dag) = arc_set
 graphviz.plot(dag,shape = 'ellipse')
 ```
 
-La segunda DAG será una versión optimizada de esta, para ello tomaremos la DAG original que formulamos y haremos pruebas sobre la independencia condicional de los arcos que formulamos.
+Después de esto para corroborar la validez del modelo dados nuestros datos se obtuvo la fuerza de cada noodo usando el método ```arc.strength()``` y se generó una segunda DAG. 
 ```{r}
 arc.strength(dag, data = data, criterion = "mi")
 ```
-
-Observando los resultados de estas pruebas se puede inferir que se deberían de eliminar los siguientes 2 arcos:
+Esta fue un resultado de una modificación en la primera, en la cuál se removieron los arcos innecesarios, los cuales tras observar los resultados de estas pruebas fueron:
 - M a V
 - B a V
-
-Ahora generaremos una DAG sin estos nodos.
 ```{r}
 dag2 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
 
@@ -149,7 +130,21 @@ arcs(dag2) = arc_set2
 
 graphviz.plot(dag2, shape = "ellipse")
 ```
-La siguiente DAG está dada por investigaciones previas. 
+Esta dag implica que lo único que informa el vehículo en el que viaja una persona es la cantidad de carros que poseé y la localidad en la que recide.
+
+Después se construyó una basada en investigación. Para esta DAG se consultaron varios recursos y artículos que describieran la relación entre las variables seleccionadas para el modelado, estos estudios si bien varían entre varios países en distintos niveles de desarrollo, otorgan una perspectiva generalizada que servirá como base para describir las conductas que podemos observar en el mundo y aplicarlas a nuestra colección de datos.
+
+
+En primer lugar partiremos de los “Nodos Padre” principales como las variables que no dependen de otras, entre ellas se encuentran el sexo (S), la edad (E), el tamaño de la población de la localidad (L) y por ultimo el estrato social (C), las variables primeras tres variables por simple lógica no se ven influenciadas por ninguna otra variable ya que son estados definidos e independientes tanto de la personas como de las localidades, aunque se podría argumentar que en el estrato social influyen aspectos como el nivel de educación, los ingresos e incluso variables que poseemos como el sexo y la edad se consideró, que dada la limitación con las variables elegidas, la relación no sería tan significativa y solo volvería la DAG más ineficiente para la modelación.
+
+
+Partiendo de esta base se definieron las primeras relaciones con las variables que describen la cantidad de motos (M), bicicletas (B) y automóviles (C), las relaciones de dependencia directas que se ven definidas a partir de los nodos padre ya definidos y basados en nuestra investigación indica que existe una relación entre el estrato social y todas las anteriormente mencionadas, un mayor nivel de estudio y mayor poder adquisitivo en el jefe de la familia aumenta la cantidad de vehículos en el hogar, @RITH2019102484, por otra parte la edad parece estar relacionada a la cantidad de bicicletas en el hogar, esto debido a que principalmente niños y adultos jóvenes son los que poseen mayor tendencia a utilizar este medio de transporte mientras que el resto de adultos suelen preferir otro tipo de transporte, @systems11060314, finalmente el tamaño de la población tiene un efecto en la cantidad de autos en el hogar debido a las diferencias en la forma urbana que ciudades o localidades presentan de acuerdo a su población, la facilidad de tránsito en las calles tanto como el acceso a transporte público es otra diferencia muy notoria de localidad a localidad, @article2.
+
+ 
+Para la próxima variable dentro de la DAG que indica el medio de transporte utilizado en un determinado viaje, podemos relacionar la cantidad de vehículos de cada categoría dentro de un hogar (M,B y C), debido a que, contar con estos medios de transporte privados tiene una influencia directa en la toma de decisiones a la hora de seleccionar el modo de desplazamiento, @article3, @article4 finalmente la variable del sexo (S) también posee una relación con el modo de transporte, esto está mas arraigado en las diferencias sociales entre hombres y mujeres, dado que en muchas ocasiones las mujeres evitan ciertos medios por las implicaciones en su seguridad y bienestar, además de señalar que las mujeres suelen trasladarse con niños y esto también afecta el medio utilizado @doi:10.1155/2013/706918
+
+
+La última variable D que especifica el periodo de la semana en que se realizó el viaje (entre semana o sábado), solo está relacionada con el medio de transporte utilizado para el viaje, ya que las actividades realizadas en distintos días de la semana requieren de un vehículo o medio de transporte adecuado para estas actividades, como lo explica el estudio de ---- la distribución y cantidad de localizaciones a visitar dentro de un “tour” se diferencia mucho entre fines de semana y días entre semana presentando mucha variabilidad intrapersonal, concretamente en fines de semana, cambiando las distancias a recorrer y por lo tanto el medio de transporte utilizado, @article.
 
 ```{r}
 dag3 = empty.graph(nodes = c('L','C','A','M','B','D','E','V','S'))
@@ -173,15 +168,15 @@ graphviz.plot(dag3, shape = 'ellipse')
 ```
 ### Encontrando la DAG Óptima
 
-La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como *Hill Climbing*. Le aplicaremos este algoritmo a nuestros datos para obtener la versión óptima de la DAG.
+La forma óptima para la DAG está dada por un algoritmo de busqueda avaricioso conocido como *Hill Climbing*. Se le aplicó este algoritmo a los datos y se obtuvo el siguiente resultado.
 ```{r}
 optimal_dag = hc(data)
 graphviz.plot(optimal_dag,shape = 'ellipse')
 ```
-Los resultados otorgados por esta DAG indican que la variable más importante es la población de la localidad en donde vive la persona, ésta se relaciona con su clase social y la cantidad de autos que tiene, que a su vez se relaciona con la clase social. La cantidad de autos junto con la clase social informan el vehículo en el que viaja la persona. El vehículo en el que viaja informa la cantidad de motocicletas que poseé un individuo, junto con la clase social informa la edad, y junto con la edad informa el sexo y el día en el que comúnmente viaja la persona.
+Esta DAG indican que la variable raíz es la población de la localidad en donde vive la persona, ésta informa su clase social y la cantidad de autos que tiene, que a su vez está dada por la clase social. La cantidad de autos junto con la clase social informan el vehículo en el que viaja la persona. El vehículo en el que viaja da la cantidad de motocicletas que poseé; junto con la clase social informa la edad; y junto con la edad informa el sexo y el día en el que viaja.
 
 ### Comparando las DAGS
-Ahora antes de decidir qué estructura utilizaremos para contestar nuestras preguntas, compararemos las DAGs obteniendo sus puntajes en las pruebas de BIC (Bayesian Information Criterion) y AIC (Akaike Information Criterion).
+Ahora antes de decidir qué estructura se utilizará para contestar las preguntas, se compararon las DAGs obteniendo sus puntajes en las pruebas de BIC (Bayesian Information Criterion) y AIC (Akaike Information Criterion).
 
 ```{r}
 bic_dag_1 = score(dag,data = data, type = 'bic')
@@ -191,7 +186,7 @@ bic_opt_dag = score(optimal_dag, data = data, type = 'bic')
 
 print(data.frame(DAG1 = bic_dag_1, DAG2 = bic_dag_2, DAG3 = bic_dag_3, OPTIMAL_DAG = bic_opt_dag))
 ```
-Los resulatados usando la prueba de BIC muestran que en efecto la mejor DAG es la que se obtuvo usando *Hill Climbing*, con la versión optimizada de la primera DAG, y la DAG basada en investigaciones previas tomando valores relativamente cercanos. Ahora probamos utilizando AIC.
+Los resulatados usando la prueba de BIC muestran que en efecto la mejor DAG es la que se obtuvo usando *Hill Climbing*, con la versión optimizada de la primera DAG, y la DAG basada en investigaciones previas tomando valores relativamente cercanos. Utilizando
 
 ```{r}
 aic_dag_1 = score(dag,data = data, type = 'aic')
@@ -201,9 +196,9 @@ aic_opt_dag = score(optimal_dag, data = data, type = 'aic')
 
 print(data.frame(DAG1 = aic_dag_1, DAG2 = aic_dag_2, DAG3 = aic_dag_3, OPTIMAL_DAG = aic_opt_dag))
 ```
-Los resultados de esta pruba concluyen de la misma forma que la mejor DAG es la obtenida a través de *Hill Climbing*, sin embargo muestran la peor DAG como aquella basada en investigciones previas.
+Utilizando AIC se concluye de la misma forma que la mejor DAG es la obtenida a través de *Hill Climbing*, sin embargo se mustra la DAG basada en investigciones previas como la peor.
 
-A pesar de su desempeñoo en la segunda prueba, utilizaremos la tercera DAG para contestar las queries debido a su decente desempeño en la primera prueba, interpretabilidad y fundamentación teórica.
+A pesar de su desempeñoo en la segunda prueba, se decidió utilizar la tercera DAG para contestar las *queries* debido a su decente desempeño en la primera prueba, interpretabilidad y fundamentación teórica.
 
 ### Queries
 

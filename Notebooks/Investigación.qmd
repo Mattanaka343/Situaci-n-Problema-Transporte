@@ -1,6 +1,7 @@
 ---
-title: "Factores sociodemográficos y sus efectos en el transporte"
-author: "Mateo Yáñez Tanaka"
+title: "Movilidad urbana en México: ¿Quién viaja, cómo y por qué?"
+
+author: "Fernando Pavía-González, Fernando Ramos-Valdez, Jorge Sanchez-Ponce, Mateo Yáñez-Tanaka"
 format:
    html:
      toc: true
@@ -11,15 +12,69 @@ format:
 editor: source
 bibliography: references.bib
 ---
-# Factores Sociodemográficos y sus efectos en el transporte
-
-Autores: Fernando Pavía-González, Fernando Ramos-Valdez, Jorge Sanchez-Ponce, Mateo Yáñez-Tanaka 
 
 ## Abstract
 
 Placeholder text
 
+## Introducción
+
+El movimiento es una parte importante de la vida diaria de las personas. Desde llegar al trabajo hasta visitar a la familia, la forma en la que llegamos a lugares determina gran parte de nuestras vidas. En tiempos recientes los cambios poblacionales, y la planeación urbana han llevado a que el tiempo de transporte en las ciudades se vuelva irracional para los trayectos que se cubren. La falta de y sobrecarga en las vías de transporte público además de la comodidad y poca regulación sobre el transporte privado no colaboran con este problema. El objetivo de esta investigación es comprender mejor los patrones de transporte de la población para informar la toma de decisiones en las políticas públicas y reducir la duración de los trayectos.
+
+Investigaciones previas han encontrado que desde inicios de la pandemia del COVID-19 en el 2020 las tendencias del transporte tanto en méxico como en otros países de américa latina, @Bosisio_Talavera_García_2025, desde la declaración de la pandemia el comportamiento de la movilidad de las ciudades más grandes de américa latina y el resto del mundo se minimizaron, limitando la asistencia a lugares de trabajo y estudio principalmente, los niveles de asistencia a espacios de trabajo no alcanzaron los números vistos en febrero de 2020 hasta el segundo semestre del 2021.
+
+Estas tendencias de inmovilidad también provocó un cambio en las dinámicas de movilidad, transportes públicos redujeron sus viajes por el riesgo a contagio y la fuerte necesidad de realizar compras sin salir del hogar provocó que servicios de delivery y paquetería aumentaran sus actividades, claro indicador de esto es el creciente aumento en la adquisición y uso de motocicletas en México, que incrementó un 473% desde el 2010 hasta el 2020 que se vió inmediatamente superado en 2021 con un aumento del 20% con respecto al año anterior.
+
+como es evidente para este punto el panorama de la movilidad especialmente en la república mexicana, levanta muchas preocupaciones con respecto a la seguridad vial, concientización ecológica y derivados, tenemos en frente una transformación en la forma en la que los mexicanos abordamos el desplazamiento dentro de la ciudad, es por esto que entender los patrones de transporte basándonos en características demográficas de la población podría ayudarnos a obtener perspectiva en formas de acción para combatir las necesidades más presentes en los transeúntes. 
+
+Para comprender estos patrones de desplazamiento se determinó que se contestarán un total de 4 preguntas propuestas por otros grupos de investigadores en nuestro grupo de estudio.
+
+¿Cuál es la probabilidad de que una mujer joven de estrato social alto use la bicicleta?	
+
+
+¿Cuál es la probabilidad de que una persona que vive en una localidad de menos de 2,500 habitantes sea de estrato alto?
+
+¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo tenga ya sea una moto, un auto o una bicicleta?	
+
+
+Se busca averiguar si las mujeres de edad media y alta, de estrato social bajo tienden a caminar más entre semana en comparación a los hombres con las mismas características.
+
+Se espera que al determinar la probabilidad de que estos sucesos ocurran obtengamos una mejor percepción de las inclinaciones de la población con respecto a sus métodos de transporte.
+
 ## Metodología
+
+Esta investigación se centró en encontrar las probabilidades de ciertos eventos que podrían ayudar a comprender mejor los patrones de movimiento de la población basado en sus características sociodemográficas. Para ello se utilizaron las redes bayesianas (BNs por sus siglas en inglés). Estas estructuras son gráfos dirigidos acíclicos (DAGs por sus siglas en inglés) en los cuales todos los nodos representan variables aleatorias (ya sea discretas o continuas) y los arcos, junto con su dirección, representan dependencias condicionales. Las BNs permiten trabajar con distribuciones condicionales locales $$A~Mult= e)~Mult(n,\theta_{A})$$en vez de la distribución conjunta (global) $$X~Mult(n,p)$$  la cual es más compleja. Las BNs también nos dan el beneficio de poder realizar queries, una forma de inferencia para encontrar probabilidades del estilo $$\mathbb{P}(Evento|Evidencia)$$, a través de aproximaciones (con algoritmos como logic sampling o muestreo de Monte Carlo) o  de manera exacta (con algoritmos como variable elimination y junction tree) 
+
+Para la creación de los modelos computacionales se usaron los lenguajes R y Python. Python se usó para la limpieza y unificación de los datos, mientras que R se usó para la inferencia estadística. Los módulos necesarios para replicar esta investigación son:
+Para python: 
+```pandas``` para el procesamiento de los datos
+```numpy``` para el manejo de arrays
+Para R:
+```bnlearn``` para el entrenamiento de las redes bayesianas
+```rgraphviz``` para graficar las dags
+Adicionalmente los datos usados para esta investigación provienen de Instituto Nacional de Estadística y Geografía, y su Encuesta Origen Destino en Hogares de la Zona Metropolitana del Valle de México (EOD) 2017 [link]
+
+
+## Aplicación
+
+### Modelación de DAG basada en estudios
+
+Para construir la DAG se consultaron varios recursos y artículos que describieran la relación entre las variables seleccionadas para el modelado, estos estudios si bien varían entre varios países en distintos niveles de desarrollo, otorgan una perspectiva generalizada que servirá como base para describir las conductas que podemos observar en el mundo y aplicarlas a nuestra colección de datos.
+
+
+En primer lugar partiremos de los “Nodos Padre” principales como las variables que no dependen de otras, entre ellas se encuentran el sexo (S), la edad (E), el tamaño de la población de la localidad (L) y por ultimo el estrato social (C), las variables primeras tres variables por simple lógica no se ven influenciadas por ninguna otra variable ya que son estados definidos e independientes tanto de la personas como de las localidades, aunque se podría argumentar que en el estrato social influyen aspectos como el nivel de educación, los ingresos e incluso variables que poseemos como el sexo y la edad se consideró, que dada la limitación con las variables elegidas, la relación no sería tan significativa y solo volvería la DAG más ineficiente para la modelación.
+
+
+Partiendo de esta base se definieron las primeras relaciones con las variables que describen la cantidad de motos (M), bicicletas (B) y automóviles (C), las relaciones de dependencia directas que se ven definidas a partir de los nodos padre ya definidos y basados en nuestra investigación indica que existe una relación entre el estrato social y todas las anteriormente mencionadas, un mayor nivel de estudio y mayor poder adquisitivo en el jefe de la familia aumenta la cantidad de vehículos en el hogar, @RITH2019102484, por otra parte la edad parece estar relacionada a la cantidad de bicicletas en el hogar, esto debido a que principalmente niños y adultos jóvenes son los que poseen mayor tendencia a utilizar este medio de transporte mientras que el resto de adultos suelen preferir otro tipo de transporte, @systems11060314, finalmente el tamaño de la población tiene un efecto en la cantidad de autos en el hogar debido a las diferencias en la forma urbana que ciudades o localidades presentan de acuerdo a su población, la facilidad de tránsito en las calles tanto como el acceso a transporte público es otra diferencia muy notoria de localidad a localidad, @article2.
+
+ 
+Para la próxima variable dentro de la DAG que indica el medio de transporte utilizado en un determinado viaje, podemos relacionar la cantidad de vehículos de cada categoría dentro de un hogar (M,B y C), debido a que, contar con estos medios de transporte privados tiene una influencia directa en la toma de decisiones a la hora de seleccionar el modo de desplazamiento, @article3, @article4 finalmente la variable del sexo (S) también posee una relación con el modo de transporte, esto está mas arraigado en las diferencias sociales entre hombres y mujeres, dado que en muchas ocasiones las mujeres evitan ciertos medios por las implicaciones en su seguridad y bienestar, además de señalar que las mujeres suelen trasladarse con niños y esto también afecta el medio utilizado @doi:10.1155/2013/706918
+
+
+La última variable D que especifica el periodo de la semana en que se realizó el viaje (entre semana o sábado), solo está relacionada con el medio de transporte utilizado para el viaje, ya que las actividades realizadas en distintos días de la semana requieren de un vehículo o medio de transporte adecuado para estas actividades, como lo explica el estudio de ---- la distribución y cantidad de localizaciones a visitar dentro de un “tour” se diferencia mucho entre fines de semana y días entre semana presentando mucha variabilidad intrapersonal, concretamente en fines de semana, cambiando las distancias a recorrer y por lo tanto el medio de transporte utilizado, @article.
+
+
+
 ```{r}
 #| eval: false
 install.packages('bnlearn')
@@ -166,7 +221,7 @@ cpquery(bn_mle,(V=='7'),((S=='2')&((E=='3')|(E=='2'))&(C=='4')))
 ```{r}
 cpquery(bn_mle, event = (E==4), evidence = (L==4), n = 10^6)
 ```
-  - La probabilidad de que en una comunidad pequeña sea de estrato alto es relativamente alta en aproximadamente 3 de cada 10 personas cumplen con estas características. 
+  - La probabilidad de que una persona en una comunidad pequeña sea de estrato alto es relativamente alta en aproximadamente 3 de cada 10 personas cumplen con estas características. 
 
 3. ¿Cuál es la probabilidad de que alguien de estrato sociodemográfico bajo (bajo y medio bajo) tenga ya sea una moto, un auto o una bicicleta?
 ```{r}
@@ -186,3 +241,19 @@ cpquery(bn_mle, event = ((V=='14')&(D=='1')), evidence = ((S=='2')&((E=='4')|(E=
 cpquery(bn_mle, event = ((V=='14')&(D=='1')), evidence = ((S=='1')&((E=='4')|(E=='5'))&(C=='1')), n = 10^6)
 ```
   - Al comparar ambos resultados podemos rechazar el enunciado propuesto, puesto que las personas del sexo masculino tuvieron un mayor porcentaje, aunque la probabilidad es extremadamente cercana, dado que la diferencia es apenas de 0.35%.
+  
+  
+  
+## Conclusiones
+
+La sección de resultados involucra la creación y posterior comparación de las DAGs, así como las respuestas a las queries asignadas utilizando la DAG seleccionada. La primera DAG fue creada con base en nuestras hipótesis, la cual representa las relaciones de dependencia entre las variables de interés, la segunda fue una versión mejorada respecto a la primera, dado que al realizar una prueba de de independencia condicional de los arcos formulados, fue posible eliminar dos relaciones cuyo aporte era casi nulo. Posteriormente se generó una tercer DAG a partir de un estudio e investigación previa, y por último se produjo la cuarta DAG utilizando el algoritmo Hill Climbing para conseguir la mejor estructura del grafo sobre los datos. 
+
+Después se compararon todas las estructuras con base en los puntajes obtenidos en las pruebas BIC (Bayesian Information Criterion) y AIC (Akaike Information Criterion), las cuales determinaron que efectivamente la mejor DAG es la que se obtuvo al emplear Hill Climbing, con la segunda y tercer DAG tomando valores próximos. Cabe mencionar que la DAG escogida para responder las queries fue la tercera, dado que su mejor argumento era la fundamentación teórica, asequible interpretabilidad y decoroso resultado en la primera prueba (BIC).
+
+
+Las respuestas de las queries nos permiten afirmar que las mujeres jóvenes (13-39 años) de un estrato socioeconómico alto no utilizan la bicicleta como medio de transporte predilecto, asimismo casi 1 de cada 2 personas dentro del estrato social medio bajo y bajo poseen vehículos particulares (auto, moto o bicicleta), del mismo modo, casi 3 de cada 10 individuos que residen en localidades con pocos habitantes (<2500) son de clase alta, y nuestra última aseveración es que los hombres y mujeres de entre 40 y 99 años de un estrato social bajo caminan casi lo mismo entre semana, con los varones superando con una escasa ventaja a las mujeres (30.43% vs 30.08%, una diferencia de solo 0.35%). 
+
+Todo lo mencionado previamente se vuelve de vital importancia debido a que entender cómo, quién y por qué se mueven los habitantes dentro de una metrópoli permite ampliar el panorama al momento de realizar diversas tareas públicas, por ejemplo, planificaciones sobre proyectos de movilidad vial, atención ciudadana, mejoramiento del transporte público, aliviar el flujo de vehículos en arterias principales y horas pico, proveer un acceso total y de calidad en cualquier tipo de servicio vial, y así de esta forma, lograr una urbanización óptima buscando la sustentabilidad y el aprovechamiento de los recursos que se poseen. 
+
+Una posible mejora a este trabajo sería poder acceder a una base de datos más reciente, dado que la información adquirida es del 2017, por lo que los resultados pueden no representar de la mejor manera la actualidad en la movilidad de los capitalinos, del mismo modo los archivos que contenían la información no proporcionaban claridad respecto al significado de muchas variables, por lo que se obstaculiza el proceso y análisis para una mejor comprensión de los datos.
+
